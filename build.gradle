@@ -1,0 +1,61 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+mainClassName = 'com.thoughtworks.nfclib.App'
+
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile 'org.mongodb.morphia:morphia:0.105',
+            'org.mongodb:mongo-java-driver:2.11.3',
+            'org.picocontainer:picocontainer:2.14.3',
+            'com.github.toastshaman:dropwizard-auth-jwt:0.7.1-0',
+            'com.google.http-client:google-http-client:1.19.0',
+            'com.google.code.gson:gson:2.3',
+            'joda-time:joda-time:2.4',
+            'org.antlr:stringtemplate:3.2',
+            'com.sendgrid:sendgrid-java:2.0.0',
+            'org.antlr:stringtemplate:3.2',
+            'org.twitter4j:twitter4j-core:4.0.3'
+
+    testCompile group: 'junit', name: 'junit', version: '4.11',
+            'org.assertj:assertj-core:1.2.0',
+            'org.mockito:mockito-core:1.9.5'
+
+}
+
+jar {
+    manifest {
+        attributes(
+                "Manifest-Version": "1.0",
+                "Class-Path": configurations.runtime.collect { it.getName() }.join(' '),
+                "Main-Class": mainClassName
+        )
+    }
+    baseName = project.name + '-all'
+    from({ configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }) {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+}
+
+task stage(dependsOn: ['clean', 'installApp'])
+
+run {
+    args 'server', 'config/local.yml'
+}
+
+sourceSets {
+    test {
+        java {
+            srcDirs = ['src/test/unit', 'src/test/service']
+        }
+    }
+}
